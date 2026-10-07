@@ -12,6 +12,10 @@ Die [Doris-4.x-Dokumentation](https://doris.apache.org/docs/4.x/lakehouse/catalo
 beschreibt fuer `driver_url` HTTP-Dienste ohne Authentifizierung.
 Der Proxy verwendet die [NGINX-Proxy-Direktiven](https://nginx.org/en/docs/http/ngx_http_proxy_module.html).
 
+#### image Voraussetzung
+docker.io/library/nginx:1.30.5-alpine
+
+
 ## 1. Zugangsdaten bereitstellen
 
 Im Nexus einen Benutzer mit Leserechten fuer das gewuenschte Repository verwenden.
