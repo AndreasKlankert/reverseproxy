@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR-ORG/nexus-jar-proxy.git
+    repoURL: https://github.com/AndreasKlankert/reverseproxy.git
     targetRevision: main
     path: charts/nexus-jar-proxy
     helm:
