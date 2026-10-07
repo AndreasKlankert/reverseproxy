@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "nexus"
+  ],
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "nexus": {
+      "type": "object",
+      "required": [
+        "url",
+        "existingSecret",
+        "usernameKey",
+        "passwordKey"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https?://[a-zA-Z0-9][a-zA-Z0-9.-]*(:[0-9]{1,5})?(/[a-zA-Z0-9._~-]+)*/?$"
+        },
+        "existingSecret": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usernameKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passwordKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "caConfigMap": {
+          "type": "string"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "externalSecret": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "apiVersion",
+        "refreshInterval",
+        "secretStoreRef",
+        "username",
+        "password"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "apiVersion": {
+          "type": "string",
+          "enum": [
+            "external-secrets.io/v1",
+            "external-secrets.io/v1beta1"
+          ]
+        },
+        "refreshInterval": {
+          "type": "string",
+          "pattern": "^([0-9]+(\\.[0-9]+)?(h|m|s))+$"
+        },
+        "secretStoreRef": {
+          "type": "object",
+          "required": [
+            "name",
+            "kind"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "SecretStore",
+                "ClusterSecretStore"
+              ]
+            }
+          }
+        },
+        "username": {
+          "type": "object",
+          "required": [
+            "key",
+            "property"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "property": {
+              "type": "string"
+            }
+          }
+        },
+        "password": {
+          "type": "object",
+          "required": [
+            "key",
+            "property"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "property": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          },
+          "then": {
+            "properties": {
+              "secretStoreRef": {
+                "properties": {
+                  "name": {
+                    "minLength": 1
+                  }
+                }
+              },
+              "username": {
+                "properties": {
+                  "key": {
+                    "minLength": 1
+                  }
+                }
+              },
+              "password": {
+                "properties": {
+                  "key": {
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "proxy": {
+      "type": "object",
+      "required": [
+        "rootUrl"
+      ],
+      "properties": {
+        "rootUrl": {
+          "type": "string",
+          "pattern": "^https?://[a-zA-Z0-9][a-zA-Z0-9.-]*(:[0-9]{1,5})?(/[a-zA-Z0-9._~-]+)*/?$"
+        }
+      }
+    }
+  }
+}

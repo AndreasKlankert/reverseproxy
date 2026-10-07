@@ -1,0 +1,27 @@
+name: Check Helm and proxy
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4.3.0
+        with:
+          version: v3.17.3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: helm lint charts/nexus-jar-proxy --strict
+      - run: helm template nexus-jar-proxy charts/nexus-jar-proxy -f examples/external-values.yaml
+      - run: helm lint charts/nexus-jar-proxy --strict -f examples/vault-values.yaml
+      - run: helm template nexus-jar-proxy charts/nexus-jar-proxy -f examples/vault-values.yaml
+      - run: bash tests/smoke.sh
+      - run: bash tests/smoke.sh
+        env:
+          SMOKE_PROXY_ROOT_URL: http://nexus-jar-proxy/jars/
+          SMOKE_NEXUS_ROOT_URL: http://nexus:8081/repository/drivers/

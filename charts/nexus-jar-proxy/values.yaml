@@ -1,0 +1,55 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.30.5-alpine"
+  pullPolicy: IfNotPresent
+
+proxy:
+  # Incoming root URL. Its path is replaced by the path in nexus.url.
+  # The hostname must resolve to this Service or the optional Ingress.
+  rootUrl: http://nexus-jar-proxy.doris.svc.cluster.local
+
+nexus:
+  # Target root URL, optionally including a base path; no query or fragment.
+  url: https://nexus.example.com
+  existingSecret: nexus-credentials
+  usernameKey: username
+  passwordKey: password
+  # Optional ConfigMap containing ca.crt (PEM CA bundle for private Nexus TLS).
+  caConfigMap: ""
+
+# Requires External Secrets Operator and an existing Vault-backed store.
+# The generated Secret is named nexus.existingSecret and uses its configured keys.
+externalSecret:
+  enabled: false
+  apiVersion: external-secrets.io/v1
+  refreshInterval: 1h
+  secretStoreRef:
+    name: ""
+    kind: ClusterSecretStore
+  username:
+    key: ""
+    property: username
+  password:
+    key: ""
+    property: password
+
+service:
+  port: 80
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  # Optional override; defaults to the hostname from proxy.rootUrl.
+  host: ""
+  tlsSecretName: ""
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

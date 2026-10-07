@@ -1,0 +1,6 @@
+proxy:
+  rootUrl: http://nexus-jar-proxy.doris.svc.cluster.local/jars/
+nexus:
+  url: https://zielnexus.de/repository/drivers/
+
+# /jars/any/path.jar?download=1 -> /repository/drivers/any/path.jar?download=1

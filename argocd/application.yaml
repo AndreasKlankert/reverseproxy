@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nexus-jar-proxy
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR-ORG/nexus-jar-proxy.git
+    targetRevision: main
+    path: charts/nexus-jar-proxy
+    helm:
+      releaseName: nexus-jar-proxy
+      valuesObject:
+        proxy:
+          rootUrl: http://nexus-jar-proxy.doris.svc.cluster.local
+        nexus:
+          url: https://nexus.example.com
+          existingSecret: nexus-credentials
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: doris
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

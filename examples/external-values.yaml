@@ -1,0 +1,9 @@
+# Requires an ingress controller, DNS and an existing TLS Secret.
+proxy:
+  rootUrl: https://jars.example.com
+
+ingress:
+  enabled: true
+  className: nginx
+  tlsSecretName: jars-tls
+  annotations: {}

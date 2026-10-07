@@ -1,0 +1,21 @@
+# External Secrets Operator and this Vault-backed store must already exist.
+nexus:
+  existingSecret: nexus-credentials
+
+externalSecret:
+  enabled: true
+  # For older operators, set external-secrets.io/v1beta1 if required by their CRDs.
+  apiVersion: external-secrets.io/v1
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault
+    # Use SecretStore for a store in the proxy namespace.
+    kind: ClusterSecretStore
+  # Paths relative to the KV mount configured in the store (e.g. mount "secret").
+  # Both fields can come from the same Vault secret or from separate paths.
+  username:
+    key: applications/nexus
+    property: username
+  password:
+    key: applications/nexus
+    property: password

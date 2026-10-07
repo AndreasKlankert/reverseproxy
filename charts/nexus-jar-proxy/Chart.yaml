@@ -1,0 +1,7 @@
+apiVersion: v2
+name: nexus-jar-proxy
+description: Read-only Nexus proxy with Basic Auth for Apache Doris JDBC drivers
+type: application
+version: 0.1.0
+appVersion: "1.30.5"
+
