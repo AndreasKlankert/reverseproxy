@@ -178,6 +178,17 @@ verwenden. Der Ingress fuegt keine weitere Anmeldung hinzu.
 
 ## Verhalten und Betrieb
 
+Fuer eine private Image-Registry die vorhandenen Pull-Secrets in den Helm-Values
+oder unter Argo CD `source.helm.valuesObject` angeben:
+
+```yaml
+imagePullSecrets:
+  - name: registry-credentials
+```
+
+Der Chart setzt diese unter `spec.template.spec.imagePullSecrets`.
+Die referenzierten Secrets muessen im Namespace des Proxys existieren.
+
 - Beliebige Pfade unter der Proxy-Root werden weitergeleitet; GET und HEAD sind erlaubt, andere Methoden liefern 403. Bei einer Root mit Basispfad liefern Pfade ausserhalb dieser Root 404.
 - Kein Upload, kein Cache, kein festes JAR-Groessenlimit. Binaerdaten werden gestreamt.
 - Range- und bedingte Download-Header werden an Nexus weitergegeben.
@@ -193,6 +204,26 @@ kubectl -n doris rollout restart deployment/nexus-jar-proxy
 ```
 
 ## Pruefen
+
+Bei `CrashLoopBackOff` die Logs der vorherigen Container-Instanz und den
+Pod-Status ansehen (Namespace und Pod-Namen entsprechend ersetzen):
+
+```sh
+kubectl -n doris get pods
+kubectl -n doris logs <pod-name> -c proxy --previous --timestamps
+kubectl -n doris describe pod <pod-name>
+```
+
+Das Startskript protokolliert seine Startphasen auf stderr und prueft die
+NGINX-Konfiguration mit `nginx -t`. Auch fruehe NGINX-Fehler werden mit
+`-e stderr` ins Container-Log geschrieben. Die Konfiguration mit dem Auth-Header
+wird dabei nicht ausgegeben. `FallbackToLogsOnError` uebernimmt bei einem Fehler
+die letzten Logzeilen in die Kubernetes-Termination-Message.
+
+Ohne Logs geben `Last State`, Exit-Code und Events Aufschluss, beispielsweise
+bei `OOMKilled`, fehlenden Secrets, Image-Pull- oder Probe-Fehlern.
+Siehe [Kubernetes Pod-Diagnose](https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/)
+und [NGINX Startparameter](https://nginx.org/en/docs/switches.html).
 
 ```sh
 helm lint charts/nexus-jar-proxy

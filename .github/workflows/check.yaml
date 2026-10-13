@@ -17,6 +17,7 @@ jobs:
         with:
           ruby-version: '3.3'
       - run: helm lint charts/nexus-jar-proxy --strict
+      - run: ruby tests/startup.rb
       - run: helm template nexus-jar-proxy charts/nexus-jar-proxy -f examples/external-values.yaml
       - run: helm lint charts/nexus-jar-proxy --strict -f examples/vault-values.yaml
       - run: helm template nexus-jar-proxy charts/nexus-jar-proxy -f examples/vault-values.yaml

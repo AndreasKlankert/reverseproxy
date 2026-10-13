@@ -5,6 +5,11 @@ image:
   tag: "1.30.5-alpine"
   pullPolicy: IfNotPresent
 
+# Existing registry Secrets in the same namespace as the proxy.
+# imagePullSecrets:
+#   - name: registry-credentials
+imagePullSecrets: []
+
 proxy:
   # Incoming root URL. Its path is replaced by the path in nexus.url.
   # The hostname must resolve to this Service or the optional Ingress.
