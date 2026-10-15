@@ -35,7 +35,12 @@
           "minLength": 1
         },
         "caConfigMap": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^$|^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+        },
+        "caBundle": {
+          "type": "string",
+          "pattern": "^$|-----BEGIN CERTIFICATE-----"
         }
       }
     },

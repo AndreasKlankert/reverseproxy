@@ -1,0 +1,9 @@
+{{- if .Values.nexus.caBundle }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nexus-jar-proxy.caConfigMap" . }}
+data:
+  ca.crt: |
+    {{- .Values.nexus.caBundle | nindent 4 }}
+{{- end }}

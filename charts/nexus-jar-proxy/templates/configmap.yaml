@@ -43,7 +43,7 @@ data:
           proxy_ssl_server_name on;
           proxy_ssl_verify on;
           proxy_ssl_verify_depth 5;
-          {{- if .Values.nexus.caConfigMap }}
+          {{- if include "nexus-jar-proxy.caConfigMap" . }}
           proxy_ssl_trusted_certificate /ca/ca.crt;
           {{- else }}
           proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;

@@ -195,13 +195,49 @@ Die referenzierten Secrets muessen im Namespace des Proxys existieren.
 - Nexus-Statuscodes wie 401, 403 und 404 werden an Doris zurueckgegeben.
 - Der Zielhost ist fest konfiguriert; eingehende Auth-Header werden ersetzt.
 - HTTPS zu Nexus prueft Zertifikate und verwendet SNI. HTTP ist fuer interne Nexus-Endpunkte konfigurierbar.
-- Fuer eine private CA: ConfigMap mit `ca.crt` als PEM-Bundle erstellen und `nexus.caConfigMap` setzen.
+- Fuer eine private CA eine der unten beschriebenen Varianten verwenden.
 - `/healthz` ist fuer die lokale Health-Pruefung reserviert und wird nicht an Nexus weitergeleitet. Es prueft den Proxy-Prozess, nicht Nexus oder die Gueltigkeit des Passworts.
 - Nach Secret- oder CA-Aenderungen die Pods neu starten:
 
 ```sh
 kubectl -n doris rollout restart deployment/nexus-jar-proxy
 ```
+
+### Eigene CA fuer die Verbindung zu Nexus
+
+Vorhandene ConfigMap im Proxy-Namespace verwenden:
+
+```yaml
+nexus:
+  caConfigMap: nexus-ca
+```
+
+Diese ConfigMap muss unter `data.ca.crt` ein PEM-CA-Bundle enthalten. Alternativ
+den PEM-Inhalt direkt in den Helm-Values bzw. Argo CD `valuesObject` setzen:
+
+```yaml
+nexus:
+  caConfigMap: ""
+  caBundle: |
+    -----BEGIN CERTIFICATE-----
+    HIER-DEN-ECHTEN-PEM-INHALT-EINSETZEN
+    -----END CERTIFICATE-----
+```
+
+Nur eine Variante verwenden: `caConfigMap` ist ein Name, `caBundle` ist der
+Zertifikatsinhalt. Bei `caBundle` erzeugt der Chart eine eigene ConfigMap
+`<release>-ca`; deren Inhalt wird nach `/ca/ca.crt` gemountet und in NGINX
+als `proxy_ssl_trusted_certificate` verwendet. Inline-CA-Aenderungen loesen
+durch eine Pod-Annotation automatisch einen Rollout aus. Aenderungen an einer
+extern verwalteten ConfigMap erfordern weiterhin einen Neustart.
+
+Das Startlog nennt die verwendete CA-Datei. Fehlende, leere oder offensichtlich
+falsch befuellte Dateien werden vor dem NGINX-Start abgelehnt; `nginx -t`
+prueft anschliessend das PEM-Format. Das bestaetigt noch nicht die passende
+Zertifikatskette des Zielservers: Das Bundle muss dessen ausstellende Root-CA
+enthalten; fehlende Intermediate-CAs muessen vom Server oder Bundle kommen.
+Ein vorhandener Mount allein bestaetigt keinen erfolgreichen TLS-Handshake.
+Die eigene CA-Datei ersetzt hier das System-Trust-Bundle fuer die Nexus-Verbindung.
 
 ## Pruefen
 

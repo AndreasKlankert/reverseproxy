@@ -15,6 +15,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/ca: {{ include (print $.Template.BasePath "/ca-configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -38,6 +39,12 @@ spec:
             - |
               {{- .Files.Get "files/start.sh" | nindent 14 }}
           env:
+            - name: NEXUS_CA_FILE
+              {{- if include "nexus-jar-proxy.caConfigMap" . }}
+              value: /ca/ca.crt
+              {{- else }}
+              value: /etc/ssl/certs/ca-certificates.crt
+              {{- end }}
             - name: NEXUS_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -73,7 +80,7 @@ spec:
               readOnly: true
             - name: tmp
               mountPath: /tmp
-            {{- if .Values.nexus.caConfigMap }}
+            {{- if include "nexus-jar-proxy.caConfigMap" . }}
             - name: ca
               mountPath: /ca
               readOnly: true
@@ -86,8 +93,11 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 64Mi
-        {{- if .Values.nexus.caConfigMap }}
+        {{- if include "nexus-jar-proxy.caConfigMap" . }}
         - name: ca
           configMap:
-            name: {{ .Values.nexus.caConfigMap }}
+            name: {{ include "nexus-jar-proxy.caConfigMap" . }}
+            items:
+              - key: ca.crt
+                path: ca.crt
         {{- end }}

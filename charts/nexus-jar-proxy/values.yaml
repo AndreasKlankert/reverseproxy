@@ -23,6 +23,9 @@ nexus:
   passwordKey: password
   # Optional ConfigMap containing ca.crt (PEM CA bundle for private Nexus TLS).
   caConfigMap: ""
+  # Alternative: PEM CA bundle; the chart creates a separate ConfigMap.
+  # Set either caConfigMap or caBundle, not both. No private key is needed.
+  caBundle: ""
 
 # Requires External Secrets Operator and an existing Vault-backed store.
 # The generated Secret is named nexus.existingSecret and uses its configured keys.

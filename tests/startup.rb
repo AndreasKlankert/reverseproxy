@@ -9,6 +9,12 @@ Dir.mktmpdir('proxy-startup-') do |dir|
   FileUtils.mkdir_p(bin)
   template = File.join(dir, 'template')
   config = File.join(dir, 'nginx.conf')
+  ca_file = File.join(dir, 'ca.crt')
+  File.write(ca_file, "-----BEGIN CERTIFICATE-----\ntest-fixture\n-----END CERTIFICATE-----\n")
+  empty_ca = File.join(dir, 'empty-ca.crt')
+  File.write(empty_ca, '')
+  invalid_ca = File.join(dir, 'invalid-ca.crt')
+  File.write(invalid_ca, 'ca-configmap-name')
   File.write(template, 'test configuration')
   File.write(File.join(bin, 'envsubst'), "#!/bin/sh\n/bin/cat\n")
   File.write(File.join(bin, 'nginx'), <<~SH)
@@ -29,13 +35,17 @@ Dir.mktmpdir('proxy-startup-') do |dir|
   script = File.join(dir, 'start.sh')
   File.write(script, source)
   env = {'PATH' => "#{bin}:/usr/bin:/bin", 'NEXUS_USERNAME' => 'test-reader',
-         'NEXUS_PASSWORD' => 'test-secret-password', 'TEST_NGINX_FAIL' => '0'}
+         'NEXUS_PASSWORD' => 'test-secret-password', 'TEST_NGINX_FAIL' => '0',
+         'NEXUS_CA_FILE' => ca_file}
   cases = [
     [{}, 0, 'proxy startup: starting nginx'],
     [{'NEXUS_USERNAME' => nil}, 1, 'Missing Nexus username'],
     [{'NEXUS_PASSWORD' => nil}, 1, 'Missing Nexus password'],
     [{'NEXUS_USERNAME' => 'invalid:reader'}, 1, 'must not contain a colon'],
     [{'PATH' => bin}, 1, 'required command missing: base64'],
+    [{'NEXUS_CA_FILE' => File.join(dir, 'missing-ca.crt')}, 1, 'CA bundle is missing, unreadable or empty'],
+    [{'NEXUS_CA_FILE' => empty_ca}, 1, 'CA bundle is missing, unreadable or empty'],
+    [{'NEXUS_CA_FILE' => invalid_ca}, 1, 'CA bundle does not contain a PEM certificate'],
     [{'TEST_NGINX_FAIL' => '1'}, 23, 'stage=validating nginx configuration exit=23']
   ]
   cases.each do |overrides, exit_code, message|
@@ -49,4 +59,4 @@ Dir.mktmpdir('proxy-startup-') do |dir|
   abort 'Missing template accepted' if status.success?
   abort 'Missing render failure diagnostic' unless stderr.include?('stage=rendering configuration')
 end
-puts 'Startup diagnostics passed: success, missing credentials/tools/template and nginx validation failure.'
+puts 'Startup diagnostics passed: success, missing credentials/tools/template, invalid CA files and nginx validation failure.'
